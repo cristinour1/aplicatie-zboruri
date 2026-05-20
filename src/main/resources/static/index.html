@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Rezervări Zboruri</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ccc; }
+        input { display: block; width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+<h2>Rezervă un Zbor</h2>
+<input type="text" id="fn" placeholder="Nume">
+<input type="text" id="ln" placeholder="Prenume">
+<input type="date" id="dt">
+<input type="text" id="ds" placeholder="Destinație">
+<button onclick="sendData()">Trimite Rezervarea</button>
+
+<h3>Lista Rezervări</h3>
+<table id="results">
+    <tr><th>Nume</th><th>Prenume</th><th>Data</th><th>Destinație</th></tr>
+</table>
+
+<script>
+    async function fetchFlights() {
+        try {
+            const res = await fetch('/api/flights');
+            const data = await res.json();
+            const table = document.getElementById('results');
+
+            table.innerHTML = '<tr><th>Nume</th><th>Prenume</th><th>Data</th><th>Destinație</th></tr>';
+
+            data.forEach(f => {
+                // Verificăm dacă variabila se numește 'date' sau 'flightDate' din Java
+                const dataZbor = f.date || f.flightDate || "Nespecificat";
+
+                table.innerHTML += `<tr>
+                <td>${f.firstName || ''}</td>
+                <td>${f.lastName || ''}</td>
+                <td>${dataZbor}</td>
+                <td>${f.destination || ''}</td>
+            </tr>`;
+            });
+        } catch (err) {
+            console.error("Eroare la încărcarea datelor:", err);
+        }
+    }
+
+    async function sendData() {
+        const flight = {
+            firstName: document.getElementById('fn').value,
+            lastName: document.getElementById('ln').value,
+            flightDate: document.getElementById('dt').value, // Folosește flightDate (ca în Java)
+            destination: document.getElementById('ds').value
+        };
+
+        try {
+            const response = await fetch('/api/flights', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(flight)
+            });
+
+            if (response.ok) {
+                fetchFlights();
+                // Curățăm câmpurile după trimitere
+                document.getElementById('fn').value = '';
+                document.getElementById('ln').value = '';
+                document.getElementById('dt').value = '';
+                document.getElementById('ds').value = '';
+            } else {
+                alert("Eroare la salvare: " + response.status);
+            }
+        } catch (err) {
+            console.error("Eroare la trimitere:", err);
+        }
+    }
+    fetchFlights();
+</script>
+</body>
+</html>
