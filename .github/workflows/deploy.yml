@@ -57,12 +57,13 @@ jobs:
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.REGION }}
-          image: europe-west3-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-          # Variabilele de mediu pentru conexiunea cu baza de date din Google Cloud
-          env_vars: |
-            SPRING_DATASOURCE_URL=jdbc:postgresql:///${{ secrets.DB_NAME }}?cloudSqlInstance=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
-            SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }}
-            SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
-            SPRING_JPA_HIBERNATE_DDL_AUTO=update
+            service: app-backend
+            region: europe-west3
+            image: europe-west3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/aplicatie-zboruri-repo/app-backend:${{ github.sha }}
+            flags: |
+              --add-cloudsql-instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
+            env_vars: |
+              SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+              SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USER }}
+              SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+              SPRING_JPA_HYBERNATE_DDL_AUTO=update
